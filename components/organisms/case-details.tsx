@@ -8,23 +8,7 @@ import { Card, CardContent } from "@/components/atoms/card"
 import { Badge } from "@/components/atoms/badge"
 import { ArrowLeft, Lock } from "lucide-react"
 import { cn } from "@/lib/utils"
-
-interface Skin {
-  name: string
-  weapon: string
-  rarity: "common" | "uncommon" | "rare" | "epic" | "legendary"
-  chance: number
-  image: string
-}
-
-interface CaseDetailsProps {
-  id: string
-  name: string
-  price: number
-  image: string
-  description: string
-  skins: Skin[]
-}
+import type { CaseDetailsProps } from "@/types/components.types"
 
 const rarityColors = {
   common: "bg-slate-500/20 text-slate-300 border-slate-500/50",

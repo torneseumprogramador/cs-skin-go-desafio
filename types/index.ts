@@ -13,3 +13,11 @@ export type {
   AddInventoryItemResponse,
 } from "./user.types"
 
+// Components Props
+export type {
+  AuthLayoutProps,
+  CaseCardProps,
+  CaseDetailsProps,
+  AuthContextType,
+} from "./components.types"
+

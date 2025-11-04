@@ -1,9 +1,5 @@
-import type React from "react"
 import Link from "next/link"
-
-interface AuthLayoutProps {
-  children: React.ReactNode
-}
+import type { AuthLayoutProps } from "@/types/components.types"
 
 export function AuthLayout({ children }: AuthLayoutProps) {
   return (

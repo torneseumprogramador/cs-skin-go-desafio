@@ -2,25 +2,10 @@ import { notFound } from "next/navigation"
 import { CaseDetails } from "@/components/organisms/case-details"
 import { casesService } from "@/services/cases"
 
-interface Skin {
-  name: string
-  weapon: string
-  rarity: "common" | "uncommon" | "rare" | "epic" | "legendary"
-  chance: number
-  image: string
-}
-
-interface CaseData {
-  id: string
-  name: string
-  price: number
-  image: string
-  description: string
-  skins: Skin[]
-}
-
+// Interfaces movidas para types/cases.types.ts
 // Esta constante não é mais usada - os dados vêm do BFF
-const casesData_DEPRECATED: Record<string, CaseData> = {
+/*
+const casesData_DEPRECATED = {
   toolbox: {
     id: "toolbox",
     name: "Toolbox Case",
@@ -644,6 +629,7 @@ const casesData_DEPRECATED: Record<string, CaseData> = {
     ],
   },
 }
+*/
 
 export default async function CasePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params

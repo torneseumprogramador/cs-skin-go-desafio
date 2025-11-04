@@ -3,18 +3,9 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
 import { authService } from "@/services/auth"
 import { userService } from "@/services/user"
+import type { AuthContextType } from "@/types/components.types"
 import type { User } from "@/types/auth.types"
 import type { UserData } from "@/types/user.types"
-
-interface AuthContextType {
-  user: User | null
-  userData: UserData | null
-  isLoading: boolean
-  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>
-  register: (name: string, email: string, password: string) => Promise<{ success: boolean; error?: string }>
-  logout: () => void
-  refreshUserData: () => void
-}
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 

@@ -3,15 +3,7 @@ import Image from "next/image"
 import { Card, CardContent, CardFooter } from "@/components/atoms/card"
 import { Badge } from "@/components/atoms/badge"
 import { cn } from "@/lib/utils"
-
-interface CaseCardProps {
-  id: string
-  name: string
-  price: number
-  image: string
-  rarity: "common" | "uncommon" | "rare" | "epic" | "legendary"
-  isFree?: boolean
-}
+import type { CaseCardProps } from "@/types/components.types"
 
 const rarityColors = {
   common: "bg-slate-500/20 text-slate-300 border-slate-500/50",

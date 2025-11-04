@@ -3,16 +3,7 @@
 import { useEffect, useState } from "react"
 import { CaseCard } from "@/components/molecules/case-card"
 import { casesService } from "@/services/cases"
-
-interface Case {
-  id: string
-  name: string
-  price: number
-  image: string
-  rarity: string
-  description: string
-  isFree?: boolean
-}
+import type { Case } from "@/types/cases.types"
 
 export function CaseGrid() {
   const [cases, setCases] = useState<Case[]>([])
