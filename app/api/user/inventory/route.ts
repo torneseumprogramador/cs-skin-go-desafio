@@ -1,32 +1,6 @@
 import { NextResponse } from "next/server"
 import { cookies } from "next/headers"
-
-interface InventoryItem {
-  id: string
-  skinName: string
-  skinImage: string
-  rarity: string
-  caseName: string
-  wonAt: string
-  value: number
-}
-
-interface Transaction {
-  id: string
-  type: "deposit" | "case_open" | "withdrawal"
-  amount: number
-  description: string
-  date: string
-  caseName?: string
-  skinWon?: string
-}
-
-interface UserData {
-  userId: string
-  balance: number
-  inventory: InventoryItem[]
-  transactions: Transaction[]
-}
+import type { UserData, InventoryItem } from "@/types/user.types"
 
 // Mock de dados dos usuários
 const mockUserData: Record<string, UserData> = {}

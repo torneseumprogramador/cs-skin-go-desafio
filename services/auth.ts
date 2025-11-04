@@ -1,12 +1,7 @@
-export interface User {
-  id: string
-  name: string
-  email: string
-  createdAt: string
-}
+import type { User, LoginResponse, RegisterResponse } from "@/types/auth.types"
 
 export const authService = {
-  async login(email: string, password: string): Promise<{ success: boolean; error?: string; user?: User }> {
+  async login(email: string, password: string): Promise<LoginResponse> {
     try {
       const response = await fetch("/api/auth/login", {
         method: "POST",
@@ -28,7 +23,7 @@ export const authService = {
     }
   },
 
-  async register(name: string, email: string, password: string): Promise<{ success: boolean; error?: string }> {
+  async register(name: string, email: string, password: string): Promise<RegisterResponse> {
     try {
       const response = await fetch("/api/auth/register", {
         method: "POST",

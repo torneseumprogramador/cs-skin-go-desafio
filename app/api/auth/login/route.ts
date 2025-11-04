@@ -1,13 +1,6 @@
 import { NextResponse } from "next/server"
 import { cookies } from "next/headers"
-
-interface StoredUser {
-  id: string
-  name: string
-  email: string
-  password: string
-  createdAt: string
-}
+import type { StoredUser, User } from "@/types/auth.types"
 
 // Mock de usuários
 let mockUsers: StoredUser[] = []
@@ -28,7 +21,7 @@ export async function POST(request: Request) {
   }
 
   // Criar resposta sem a senha
-  const userResponse = {
+  const userResponse: User = {
     id: user.id,
     name: user.name,
     email: user.email,

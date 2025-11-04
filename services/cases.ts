@@ -1,29 +1,4 @@
-interface Case {
-  id: string
-  name: string
-  price: number
-  image: string
-  rarity: string
-  description: string
-  isFree?: boolean
-}
-
-interface Skin {
-  name: string
-  weapon: string
-  rarity: "common" | "uncommon" | "rare" | "epic" | "legendary"
-  chance: number
-  image: string
-}
-
-interface CaseData {
-  id: string
-  name: string
-  price: number
-  image: string
-  description: string
-  skins: Skin[]
-}
+import type { Case, CaseData } from "@/types/cases.types"
 
 export const casesService = {
   async getAllCases(): Promise<Case[]> {

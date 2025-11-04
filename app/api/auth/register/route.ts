@@ -1,12 +1,5 @@
 import { NextResponse } from "next/server"
-
-interface StoredUser {
-  id: string
-  name: string
-  email: string
-  password: string
-  createdAt: string
-}
+import type { StoredUser } from "@/types/auth.types"
 
 // Mock de usuários (compartilhado entre rotas)
 let mockUsers: StoredUser[] = []

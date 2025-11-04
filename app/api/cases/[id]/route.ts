@@ -1,21 +1,5 @@
 import { NextResponse } from "next/server"
-
-interface Skin {
-  name: string
-  weapon: string
-  rarity: "common" | "uncommon" | "rare" | "epic" | "legendary"
-  chance: number
-  image: string
-}
-
-interface CaseData {
-  id: string
-  name: string
-  price: number
-  image: string
-  description: string
-  skins: Skin[]
-}
+import type { CaseData } from "@/types/cases.types"
 
 // Dados mockados das caixas e seus conteúdos
 const casesData: Record<string, CaseData> = {

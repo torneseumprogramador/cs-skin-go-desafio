@@ -1,29 +1,9 @@
-export interface InventoryItem {
-  id: string
-  skinName: string
-  skinImage: string
-  rarity: string
-  caseName: string
-  wonAt: string
-  value: number
-}
-
-export interface Transaction {
-  id: string
-  type: "deposit" | "case_open" | "withdrawal"
-  amount: number
-  description: string
-  date: string
-  caseName?: string
-  skinWon?: string
-}
-
-export interface UserData {
-  userId: string
-  balance: number
-  inventory: InventoryItem[]
-  transactions: Transaction[]
-}
+import type {
+  UserData,
+  InventoryItem,
+  AddInventoryItemRequest,
+  AddInventoryItemResponse,
+} from "@/types/user.types"
 
 export const userService = {
   async getUserData(): Promise<UserData> {
@@ -73,13 +53,7 @@ export const userService = {
     return data.data
   },
 
-  async addToInventory(item: {
-    skinName: string
-    skinImage: string
-    rarity: string
-    caseName: string
-    value: number
-  }): Promise<{ data: UserData; item: InventoryItem }> {
+  async addToInventory(item: AddInventoryItemRequest): Promise<AddInventoryItemResponse> {
     const response = await fetch("/api/user/inventory", {
       method: "POST",
       headers: {

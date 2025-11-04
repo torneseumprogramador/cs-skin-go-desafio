@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server"
+import type { Case } from "@/types/cases.types"
 
 // Mock de dados das caixas
-const cases = [
+const cases: Case[] = [
   {
     id: "toolbox",
     name: "Toolbox Case",

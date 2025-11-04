@@ -92,6 +92,13 @@ Todos os dados mockados foram **migrados para o BFF (Backend for Frontend)** usa
 
 ```
 📁 Projeto
+├── types/                          # Interfaces e Tipos TypeScript
+│   ├── index.ts                   ✅ Re-exporta todos os tipos
+│   ├── cases.types.ts             ✅ Tipos de caixas e skins
+│   ├── auth.types.ts              ✅ Tipos de autenticação
+│   ├── user.types.ts              ✅ Tipos de usuário
+│   └── README.md                  ✅ Documentação dos tipos
+│
 ├── app/api/                        # BFF (Backend for Frontend)
 │   ├── cases/
 │   │   ├── route.ts               ✅ GET - Lista todas as caixas
@@ -114,10 +121,10 @@ Todos os dados mockados foram **migrados para o BFF (Backend for Frontend)** usa
 │       └── inventory/
 │           └── route.ts           ✅ POST/DELETE - Inventário
 │
-├── services/                       # Services Layer
-│   ├── cases.ts                   ✅ Serviço de caixas
-│   ├── auth.ts                    ✅ Serviço de autenticação
-│   └── user.ts                    ✅ Serviço de usuário
+├── services/                       # Services Layer (sem interfaces)
+│   ├── cases.ts                   ✅ Serviço de caixas (importa types)
+│   ├── auth.ts                    ✅ Serviço de autenticação (importa types)
+│   └── user.ts                    ✅ Serviço de usuário (importa types)
 │
 └── (arquivos refatorados)
     ├── components/organisms/case-grid.tsx       ✅
