@@ -8,7 +8,7 @@ import { Button } from "@/components/atoms/button"
 import { Input } from "@/components/atoms/input"
 import { Label } from "@/components/atoms/label"
 import { Wallet, CreditCard, Smartphone, DollarSign } from "lucide-react"
-import { addBalance } from "@/lib/user-data"
+import { userService } from "@/services/user"
 import { useToast } from "@/hooks/use-toast"
 
 export default function AdicionarSaldoPage() {
@@ -43,20 +43,29 @@ export default function AdicionarSaldoPage() {
     setIsProcessing(true)
 
     // Simulate payment processing
-    setTimeout(() => {
-      const methodName = selectedMethod === "credit" ? "Cartão de Crédito" : "PIX"
-      addBalance(user.id, numAmount, `Depósito via ${methodName}`)
-      refreshUserData()
+    setTimeout(async () => {
+      try {
+        const methodName = selectedMethod === "credit" ? "Cartão de Crédito" : "PIX"
+        await userService.addBalance(numAmount, `Depósito via ${methodName}`)
+        await refreshUserData()
 
-      toast({
-        title: "Saldo adicionado!",
-        description: `R$ ${numAmount.toFixed(2).replace(".", ",")} foram adicionados à sua conta.`,
-      })
+        toast({
+          title: "Saldo adicionado!",
+          description: `R$ ${numAmount.toFixed(2).replace(".", ",")} foram adicionados à sua conta.`,
+        })
 
-      setAmount("")
-      setSelectedMethod(null)
-      setIsProcessing(false)
-      router.push("/perfil")
+        setAmount("")
+        setSelectedMethod(null)
+        router.push("/perfil")
+      } catch (error) {
+        toast({
+          title: "Erro ao adicionar saldo",
+          description: error instanceof Error ? error.message : "Tente novamente mais tarde.",
+          variant: "destructive",
+        })
+      } finally {
+        setIsProcessing(false)
+      }
     }, 2000)
   }
 

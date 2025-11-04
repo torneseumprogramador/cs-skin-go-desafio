@@ -1,8 +1,8 @@
 "use client"
 
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
-import { getCurrentUser, loginUser, logoutUser, registerUser, type User } from "@/lib/auth"
-import { getUserData, type UserData } from "@/lib/user-data"
+import { authService, type User } from "@/services/auth"
+import { userService, type UserData } from "@/services/user"
 
 interface AuthContextType {
   user: User | null
@@ -21,36 +21,52 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [userData, setUserData] = useState<UserData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
-  const refreshUserData = () => {
+  const refreshUserData = async () => {
     if (user) {
-      const data = getUserData(user.id)
-      setUserData(data)
+      try {
+        const data = await userService.getUserData()
+        setUserData(data)
+      } catch (error) {
+        console.error("Erro ao atualizar dados do usuário:", error)
+      }
     }
   }
 
   useEffect(() => {
     // Check for existing session on mount
-    const currentUser = getCurrentUser()
-    setUser(currentUser)
-    if (currentUser) {
-      const data = getUserData(currentUser.id)
-      setUserData(data)
+    async function checkAuth() {
+      const currentUser = await authService.getCurrentUser()
+      setUser(currentUser)
+      if (currentUser) {
+        try {
+          const data = await userService.getUserData()
+          setUserData(data)
+        } catch (error) {
+          console.error("Erro ao carregar dados do usuário:", error)
+        }
+      }
+      setIsLoading(false)
     }
-    setIsLoading(false)
+
+    checkAuth()
   }, [])
 
   const login = async (email: string, password: string) => {
-    const result = loginUser(email, password)
+    const result = await authService.login(email, password)
     if (result.success && result.user) {
       setUser(result.user)
-      const data = getUserData(result.user.id)
-      setUserData(data)
+      try {
+        const data = await userService.getUserData()
+        setUserData(data)
+      } catch (error) {
+        console.error("Erro ao carregar dados do usuário:", error)
+      }
     }
     return result
   }
 
   const register = async (name: string, email: string, password: string) => {
-    const result = registerUser(name, email, password)
+    const result = await authService.register(name, email, password)
     if (result.success) {
       // Auto login after registration
       return login(email, password)
@@ -58,8 +74,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return result
   }
 
-  const logout = () => {
-    logoutUser()
+  const logout = async () => {
+    await authService.logout()
     setUser(null)
     setUserData(null)
   }

@@ -1,6 +1,4 @@
-import { notFound } from "next/navigation"
-import { CaseDetails } from "@/components/organisms/case-details"
-import { casesService } from "@/services/cases"
+import { NextResponse } from "next/server"
 
 interface Skin {
   name: string
@@ -19,8 +17,8 @@ interface CaseData {
   skins: Skin[]
 }
 
-// Esta constante não é mais usada - os dados vêm do BFF
-const casesData_DEPRECATED: Record<string, CaseData> = {
+// Dados mockados das caixas e seus conteúdos
+const casesData: Record<string, CaseData> = {
   toolbox: {
     id: "toolbox",
     name: "Toolbox Case",
@@ -645,18 +643,14 @@ const casesData_DEPRECATED: Record<string, CaseData> = {
   },
 }
 
-export default async function CasePage({ params }: { params: Promise<{ id: string }> }) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  
-  try {
-    const caseData = await casesService.getCaseById(id)
+  const caseData = casesData[id]
 
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <CaseDetails {...caseData} />
-      </div>
-    )
-  } catch (error) {
-    notFound()
+  if (!caseData) {
+    return NextResponse.json({ error: "Case not found" }, { status: 404 })
   }
+
+  return NextResponse.json({ case: caseData })
 }
+

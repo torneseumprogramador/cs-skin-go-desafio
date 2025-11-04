@@ -60,10 +60,12 @@ export function CaseDetails({ id, name, price, image, description, skins }: Case
 
       {/* Cabeçalho da caixa */}
       <div className="flex flex-col lg:flex-row gap-8 items-center">
-        <div className="relative w-full max-w-md aspect-square">
+        <div className="relative w-full max-w-lg aspect-square">
           <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-accent/20 rounded-2xl blur-2xl" />
-          <div className="relative bg-card border border-border rounded-2xl p-8">
-            <Image src={image || "/placeholder.svg"} alt={name} fill className="object-contain p-4" />
+          <div className="relative bg-card border border-border rounded-2xl p-4 h-full">
+            <div className="relative w-full h-full">
+              <Image src={image || "/placeholder.svg"} alt={name} fill className="object-contain" />
+            </div>
           </div>
         </div>
 
