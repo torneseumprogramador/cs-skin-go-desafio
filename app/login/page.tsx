@@ -1,5 +1,5 @@
-import { LoginForm } from "@/components/auth/login-form"
-import { AuthLayout } from "@/components/auth/auth-layout"
+import { LoginForm } from "@/components/organisms/login-form"
+import { AuthLayout } from "@/components/molecules/auth-layout"
 
 export default function LoginPage() {
   return (

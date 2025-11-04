@@ -3,8 +3,8 @@ import type { Metadata } from "next"
 import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
 import { AuthProvider } from "@/contexts/auth-context"
-import { Header } from "@/components/layout/header"
-import { Footer } from "@/components/layout/footer"
+import { Header } from "@/components/organisms/header"
+import { Footer } from "@/components/organisms/footer"
 
 export const metadata: Metadata = {
   title: "SkinArena - Caixas de Sorte",

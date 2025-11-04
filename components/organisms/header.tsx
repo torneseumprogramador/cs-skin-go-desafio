@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/atoms/button"
 import { User, LogOut, Wallet } from "lucide-react"
 import { useAuth } from "@/contexts/auth-context"
 import {
@@ -11,7 +11,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/atoms/dropdown-menu"
 
 export function Header() {
   const { user, userData, logout } = useAuth()

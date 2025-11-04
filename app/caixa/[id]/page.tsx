@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation"
-import { CaseDetails } from "@/components/cases/case-details"
-import { Header } from "@/components/layout/header"
+import { CaseDetails } from "@/components/organisms/case-details"
+import { Header } from "@/components/organisms/header"
 
 // Dados mockados das caixas e seus conteúdos
 const casesData = {

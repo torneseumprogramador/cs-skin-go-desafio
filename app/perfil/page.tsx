@@ -3,8 +3,8 @@
 import { useAuth } from "@/contexts/auth-context"
 import { useRouter } from "next/navigation"
 import { useEffect } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/atoms/card"
+import { Button } from "@/components/atoms/button"
 import { User, Mail, Calendar, Wallet, Package, History } from "lucide-react"
 import Link from "next/link"
 

@@ -1,4 +1,4 @@
-import { CaseGrid } from "@/components/cases/case-grid"
+import { CaseGrid } from "@/components/organisms/case-grid"
 
 export default function HomePage() {
   return (

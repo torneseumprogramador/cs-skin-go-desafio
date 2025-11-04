@@ -3,8 +3,8 @@
 import { useAuth } from "@/contexts/auth-context"
 import { useRouter } from "next/navigation"
 import { useEffect } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/atoms/card"
+import { Badge } from "@/components/atoms/badge"
 import { History, TrendingUp, TrendingDown, Package } from "lucide-react"
 
 export default function HistoricoPage() {

@@ -1,4 +1,4 @@
-import { CaseCard } from "./case-card"
+import { CaseCard } from "@/components/molecules/case-card"
 
 // Dados mockados das caixas
 const cases = [

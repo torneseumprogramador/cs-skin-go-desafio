@@ -1,5 +1,5 @@
-import { RegisterForm } from "@/components/auth/register-form"
-import { AuthLayout } from "@/components/auth/auth-layout"
+import { RegisterForm } from "@/components/organisms/register-form"
+import { AuthLayout } from "@/components/molecules/auth-layout"
 
 export default function CadastroPage() {
   return (

@@ -1,7 +1,7 @@
 import Link from "next/link"
 import Image from "next/image"
-import { Card, CardContent, CardFooter } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { Card, CardContent, CardFooter } from "@/components/atoms/card"
+import { Badge } from "@/components/atoms/badge"
 import { cn } from "@/lib/utils"
 
 interface CaseCardProps {
