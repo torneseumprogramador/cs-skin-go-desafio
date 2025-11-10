@@ -1,93 +1,102 @@
 import { NextResponse } from "next/server"
 import { cookies } from "next/headers"
-import type { UserData, InventoryItem } from "@/types/user.types"
+import { getApiUrl } from "@/lib/api-config"
 
-// Mock de dados dos usuários
-const mockUserData: Record<string, UserData> = {}
-
-async function getUserFromCookie() {
+async function getAuthToken() {
   const cookieStore = await cookies()
-  const userSession = cookieStore.get("user_session")
-
-  if (!userSession) {
-    return null
-  }
-
-  try {
-    return JSON.parse(userSession.value)
-  } catch {
-    return null
-  }
-}
-
-function getMockUserData(userId: string): UserData {
-  if (!mockUserData[userId]) {
-    mockUserData[userId] = {
-      userId,
-      balance: 0,
-      inventory: [],
-      transactions: [],
-    }
-  }
-  return mockUserData[userId]
-}
-
-function saveMockUserData(data: UserData) {
-  mockUserData[data.userId] = data
+  return cookieStore.get("auth_token")?.value
 }
 
 // POST - Adicionar item ao inventário
 export async function POST(request: Request) {
-  const user = await getUserFromCookie()
+  try {
+    const authToken = await getAuthToken()
 
-  if (!user) {
-    return NextResponse.json({ error: "Não autenticado" }, { status: 401 })
+    if (!authToken) {
+      return NextResponse.json({ error: "Não autenticado" }, { status: 401 })
+    }
+
+    const body = await request.json()
+    const { skinName, skinImage, rarity, caseName, value } = body
+
+    if (!skinName || !rarity || !caseName) {
+      return NextResponse.json({ error: "Dados incompletos" }, { status: 400 })
+    }
+
+    // Fazer requisição para a API real
+    const response = await fetch(getApiUrl("user/inventory"), {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${authToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ skinName, skinImage, rarity, caseName, value }),
+    })
+
+    const data = await response.json()
+
+    if (!response.ok) {
+      return NextResponse.json(
+        { error: data.message || "Erro ao adicionar item ao inventário" },
+        { status: response.status }
+      )
+    }
+
+    return NextResponse.json({ 
+      success: true, 
+      data: data.data || data,
+      item: data.item 
+    })
+  } catch (error) {
+    console.error("Erro ao adicionar item ao inventário:", error)
+    return NextResponse.json(
+      { error: "Erro ao conectar com o servidor" },
+      { status: 500 }
+    )
   }
-
-  const body = await request.json()
-  const { skinName, skinImage, rarity, caseName, value } = body
-
-  if (!skinName || !rarity || !caseName) {
-    return NextResponse.json({ error: "Dados incompletos" }, { status: 400 })
-  }
-
-  const userData = getMockUserData(user.id)
-
-  const newItem: InventoryItem = {
-    id: crypto.randomUUID(),
-    skinName,
-    skinImage: skinImage || "/placeholder.svg",
-    rarity,
-    caseName,
-    wonAt: new Date().toISOString(),
-    value: value || 0,
-  }
-
-  userData.inventory.unshift(newItem)
-  saveMockUserData(userData)
-
-  return NextResponse.json({ success: true, data: userData, item: newItem })
 }
 
 // DELETE - Remover item do inventário
 export async function DELETE(request: Request) {
-  const user = await getUserFromCookie()
+  try {
+    const authToken = await getAuthToken()
 
-  if (!user) {
-    return NextResponse.json({ error: "Não autenticado" }, { status: 401 })
+    if (!authToken) {
+      return NextResponse.json({ error: "Não autenticado" }, { status: 401 })
+    }
+
+    const { searchParams } = new URL(request.url)
+    const itemId = searchParams.get("itemId")
+
+    if (!itemId) {
+      return NextResponse.json({ error: "ID do item não fornecido" }, { status: 400 })
+    }
+
+    // Fazer requisição para a API real
+    const response = await fetch(getApiUrl(`user/inventory/${itemId}`), {
+      method: "DELETE",
+      headers: {
+        "Authorization": `Bearer ${authToken}`,
+        "Content-Type": "application/json",
+      },
+    })
+
+    const data = await response.json()
+
+    if (!response.ok) {
+      return NextResponse.json(
+        { error: data.message || "Erro ao remover item do inventário" },
+        { status: response.status }
+      )
+    }
+
+    return NextResponse.json({ success: true, data: data.data || data })
+  } catch (error) {
+    console.error("Erro ao remover item do inventário:", error)
+    return NextResponse.json(
+      { error: "Erro ao conectar com o servidor" },
+      { status: 500 }
+    )
   }
-
-  const { searchParams } = new URL(request.url)
-  const itemId = searchParams.get("itemId")
-
-  if (!itemId) {
-    return NextResponse.json({ error: "ID do item não fornecido" }, { status: 400 })
-  }
-
-  const userData = getMockUserData(user.id)
-  userData.inventory = userData.inventory.filter((item) => item.id !== itemId)
-  saveMockUserData(userData)
-
-  return NextResponse.json({ success: true, data: userData })
 }
 

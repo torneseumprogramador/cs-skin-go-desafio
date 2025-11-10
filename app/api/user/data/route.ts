@@ -1,60 +1,47 @@
 import { NextResponse } from "next/server"
 import { cookies } from "next/headers"
-import type { UserData } from "@/types/user.types"
+import { getApiUrl } from "@/lib/api-config"
 
-// Mock de dados dos usuários
-const mockUserData: Record<string, UserData> = {}
-
-async function getUserFromCookie() {
+async function getAuthToken() {
   const cookieStore = await cookies()
-  const userSession = cookieStore.get("user_session")
-
-  if (!userSession) {
-    return null
-  }
-
-  try {
-    return JSON.parse(userSession.value)
-  } catch {
-    return null
-  }
+  return cookieStore.get("auth_token")?.value
 }
 
 export async function GET() {
-  const user = await getUserFromCookie()
+  try {
+    const authToken = await getAuthToken()
 
-  if (!user) {
-    return NextResponse.json({ error: "Não autenticado" }, { status: 401 })
-  }
-
-  // Retornar ou criar dados do usuário
-  if (!mockUserData[user.id]) {
-    mockUserData[user.id] = {
-      userId: user.id,
-      balance: 0,
-      inventory: [],
-      transactions: [],
+    if (!authToken) {
+      return NextResponse.json({ error: "Não autenticado" }, { status: 401 })
     }
-  }
 
-  return NextResponse.json({ data: mockUserData[user.id] })
-}
+    // Fazer requisição para a API real
+    const response = await fetch(getApiUrl("user/data"), {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${authToken}`,
+        "Content-Type": "application/json",
+      },
+      cache: "no-store",
+    })
 
-// Função auxiliar para obter dados do usuário
-export function getMockUserData(userId: string): UserData {
-  if (!mockUserData[userId]) {
-    mockUserData[userId] = {
-      userId,
-      balance: 0,
-      inventory: [],
-      transactions: [],
+    if (!response.ok) {
+      if (response.status === 401) {
+        return NextResponse.json({ error: "Não autenticado" }, { status: 401 })
+      }
+      throw new Error("Erro ao buscar dados do usuário")
     }
-  }
-  return mockUserData[userId]
-}
 
-// Função auxiliar para salvar dados do usuário
-export function saveMockUserData(data: UserData) {
-  mockUserData[data.userId] = data
+    const data = await response.json()
+    
+    // A API retorna os dados do usuário diretamente ou em um objeto data
+    return NextResponse.json({ data: data.data || data })
+  } catch (error) {
+    console.error("Erro ao buscar dados do usuário:", error)
+    return NextResponse.json(
+      { error: "Erro ao buscar dados do usuário" },
+      { status: 500 }
+    )
+  }
 }
 

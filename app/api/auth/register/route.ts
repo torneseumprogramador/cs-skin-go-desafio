@@ -1,44 +1,40 @@
 import { NextResponse } from "next/server"
-import type { StoredUser } from "@/types/auth.types"
-
-// Mock de usuários (compartilhado entre rotas)
-let mockUsers: StoredUser[] = []
+import { getApiUrl } from "@/lib/api-config"
 
 export async function POST(request: Request) {
-  const body = await request.json()
-  const { name, email, password } = body
+  try {
+    const body = await request.json()
+    const { name, email, password } = body
 
-  if (!name || !email || !password) {
-    return NextResponse.json({ error: "Todos os campos são obrigatórios" }, { status: 400 })
+    if (!name || !email || !password) {
+      return NextResponse.json({ error: "Todos os campos são obrigatórios" }, { status: 400 })
+    }
+
+    // Fazer requisição para a API real
+    const response = await fetch(getApiUrl("auth/register"), {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ name, email, password }),
+    })
+
+    const data = await response.json()
+
+    if (!response.ok) {
+      return NextResponse.json(
+        { error: data.message || "Erro ao fazer cadastro" },
+        { status: response.status }
+      )
+    }
+
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error("Erro ao fazer cadastro:", error)
+    return NextResponse.json(
+      { error: "Erro ao conectar com o servidor" },
+      { status: 500 }
+    )
   }
-
-  // Verificar se o email já está cadastrado
-  const existingUser = mockUsers.find((u) => u.email === email)
-  if (existingUser) {
-    return NextResponse.json({ error: "Este e-mail já está cadastrado" }, { status: 409 })
-  }
-
-  // Criar novo usuário
-  const newUser: StoredUser = {
-    id: crypto.randomUUID(),
-    name,
-    email,
-    password, // Em produção, deveria ser hasheado
-    createdAt: new Date().toISOString(),
-  }
-
-  mockUsers.push(newUser)
-
-  return NextResponse.json({ success: true })
-}
-
-// Função auxiliar para obter todos os usuários
-export function getMockUsers(): StoredUser[] {
-  return mockUsers
-}
-
-// Função auxiliar para definir usuários (para sincronização)
-export function setMockUsers(users: StoredUser[]) {
-  mockUsers = users
 }
 

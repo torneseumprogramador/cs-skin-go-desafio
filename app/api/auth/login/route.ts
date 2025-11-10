@@ -1,57 +1,54 @@
 import { NextResponse } from "next/server"
 import { cookies } from "next/headers"
-import type { StoredUser, User } from "@/types/auth.types"
-
-// Mock de usuários
-let mockUsers: StoredUser[] = []
+import { getApiUrl } from "@/lib/api-config"
 
 export async function POST(request: Request) {
-  const body = await request.json()
-  const { email, password } = body
+  try {
+    const body = await request.json()
+    const { email, password } = body
 
-  if (!email || !password) {
-    return NextResponse.json({ error: "Email e senha são obrigatórios" }, { status: 400 })
+    if (!email || !password) {
+      return NextResponse.json({ error: "Email e senha são obrigatórios" }, { status: 400 })
+    }
+
+    // Fazer requisição para a API real
+    const response = await fetch(getApiUrl("auth/login"), {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, password }),
+    })
+
+    const data = await response.json()
+
+    if (!response.ok) {
+      return NextResponse.json(
+        { error: data.message || "E-mail ou senha incorretos" },
+        { status: response.status }
+      )
+    }
+
+    // A API retorna { user, token }
+    const { user, token } = data
+
+    // Armazenar o token JWT em um cookie httpOnly
+    const cookieStore = await cookies()
+    cookieStore.set("auth_token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 7, // 7 dias
+    })
+
+    // Retornar os dados do usuário (sem o token por segurança)
+    return NextResponse.json({ success: true, user })
+  } catch (error) {
+    console.error("Erro ao fazer login:", error)
+    return NextResponse.json(
+      { error: "Erro ao conectar com o servidor" },
+      { status: 500 }
+    )
   }
-
-  // Buscar usuário
-  const user = mockUsers.find((u) => u.email === email && u.password === password)
-
-  if (!user) {
-    return NextResponse.json({ error: "E-mail ou senha incorretos" }, { status: 401 })
-  }
-
-  // Criar resposta sem a senha
-  const userResponse: User = {
-    id: user.id,
-    name: user.name,
-    email: user.email,
-    createdAt: user.createdAt,
-  }
-
-  // Definir cookie de sessão
-  const cookieStore = await cookies()
-  cookieStore.set("user_session", JSON.stringify(userResponse), {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    maxAge: 60 * 60 * 24 * 7, // 7 dias
-  })
-
-  return NextResponse.json({ success: true, user: userResponse })
-}
-
-// Função auxiliar para adicionar usuário (usada pela API de registro)
-export function addMockUser(user: StoredUser) {
-  mockUsers.push(user)
-}
-
-// Função auxiliar para buscar usuário por email (usada pela API de registro)
-export function findMockUserByEmail(email: string): StoredUser | undefined {
-  return mockUsers.find((u) => u.email === email)
-}
-
-// Função auxiliar para obter todos os usuários
-export function getMockUsers(): StoredUser[] {
-  return mockUsers
 }
 

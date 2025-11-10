@@ -1,104 +1,87 @@
 import { NextResponse } from "next/server"
 import { cookies } from "next/headers"
-import type { UserData } from "@/types/user.types"
+import { getApiUrl } from "@/lib/api-config"
 
-// Mock de dados dos usuários
-const mockUserData: Record<string, UserData> = {}
-
-async function getUserFromCookie() {
+async function getAuthToken() {
   const cookieStore = await cookies()
-  const userSession = cookieStore.get("user_session")
-
-  if (!userSession) {
-    return null
-  }
-
-  try {
-    return JSON.parse(userSession.value)
-  } catch {
-    return null
-  }
-}
-
-function getMockUserData(userId: string): UserData {
-  if (!mockUserData[userId]) {
-    mockUserData[userId] = {
-      userId,
-      balance: 0,
-      inventory: [],
-      transactions: [],
-    }
-  }
-  return mockUserData[userId]
-}
-
-function saveMockUserData(data: UserData) {
-  mockUserData[data.userId] = data
+  return cookieStore.get("auth_token")?.value
 }
 
 // POST - Adicionar saldo
 export async function POST(request: Request) {
-  const user = await getUserFromCookie()
+  try {
+    const authToken = await getAuthToken()
 
-  if (!user) {
-    return NextResponse.json({ error: "Não autenticado" }, { status: 401 })
+    if (!authToken) {
+      return NextResponse.json({ error: "Não autenticado" }, { status: 401 })
+    }
+
+    const body = await request.json()
+    const { amount, description } = body
+
+    if (!amount || amount <= 0) {
+      return NextResponse.json({ error: "Valor inválido" }, { status: 400 })
+    }
+
+    // Fazer requisição para a API real
+    const response = await fetch(getApiUrl("user/balance"), {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${authToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ amount, description }),
+    })
+
+    const data = await response.json()
+
+    if (!response.ok) {
+      return NextResponse.json(
+        { error: data.message || "Erro ao adicionar saldo" },
+        { status: response.status }
+      )
+    }
+
+    return NextResponse.json({ success: true, data: data.data || data })
+  } catch (error) {
+    console.error("Erro ao adicionar saldo:", error)
+    return NextResponse.json(
+      { error: "Erro ao conectar com o servidor" },
+      { status: 500 }
+    )
   }
-
-  const body = await request.json()
-  const { amount, description } = body
-
-  if (!amount || amount <= 0) {
-    return NextResponse.json({ error: "Valor inválido" }, { status: 400 })
-  }
-
-  const userData = getMockUserData(user.id)
-  userData.balance += amount
-  userData.transactions.unshift({
-    id: crypto.randomUUID(),
-    type: "deposit",
-    amount,
-    description: description || `Depósito de R$ ${amount.toFixed(2)}`,
-    date: new Date().toISOString(),
-  })
-
-  saveMockUserData(userData)
-
-  return NextResponse.json({ success: true, data: userData })
 }
 
 // PATCH - Deduzir saldo (para abertura de caixas)
+// Nota: A API backend usa POST em cases/:id/open para abrir caixa
+// Este endpoint é mantido para compatibilidade, mas pode não ser usado
 export async function PATCH(request: Request) {
-  const user = await getUserFromCookie()
+  try {
+    const authToken = await getAuthToken()
 
-  if (!user) {
-    return NextResponse.json({ error: "Não autenticado" }, { status: 401 })
+    if (!authToken) {
+      return NextResponse.json({ error: "Não autenticado" }, { status: 401 })
+    }
+
+    const body = await request.json()
+    const { amount, caseName } = body
+
+    if (!amount || amount <= 0) {
+      return NextResponse.json({ error: "Valor inválido" }, { status: 400 })
+    }
+
+    // Este endpoint pode ser removido se a funcionalidade de abrir caixa
+    // estiver completamente implementada através de cases/:id/open
+    return NextResponse.json(
+      { error: "Use o endpoint de abertura de caixa específico" },
+      { status: 400 }
+    )
+  } catch (error) {
+    console.error("Erro ao deduzir saldo:", error)
+    return NextResponse.json(
+      { error: "Erro ao conectar com o servidor" },
+      { status: 500 }
+    )
   }
-
-  const body = await request.json()
-  const { amount, caseName } = body
-
-  if (!amount || amount <= 0) {
-    return NextResponse.json({ error: "Valor inválido" }, { status: 400 })
-  }
-
-  const userData = getMockUserData(user.id)
-
-  if (userData.balance < amount) {
-    return NextResponse.json({ error: "Saldo insuficiente" }, { status: 400 })
-  }
-
-  userData.balance -= amount
-  userData.transactions.unshift({
-    id: crypto.randomUUID(),
-    type: "case_open",
-    amount: -amount,
-    description: `Abertura de caixa: ${caseName}`,
-    date: new Date().toISOString(),
-    caseName,
-  })
-
-  saveMockUserData(userData)
-
-  return NextResponse.json({ success: true, data: userData })
 }
 
