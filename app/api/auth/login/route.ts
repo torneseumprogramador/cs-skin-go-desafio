@@ -32,6 +32,17 @@ export async function POST(request: Request) {
     // A API retorna { user, token }
     const { user, token } = data
 
+    console.log("[LOGIN] Token recebido:", token ? "✓ Sim" : "✗ Não")
+    console.log("[LOGIN] Usuário:", user?.email)
+
+    if (!token) {
+      console.error("[LOGIN] Token não foi retornado pela API!")
+      return NextResponse.json(
+        { error: "Erro de autenticação - token não recebido" },
+        { status: 500 }
+      )
+    }
+
     // Armazenar o token JWT em um cookie httpOnly
     const cookieStore = await cookies()
     cookieStore.set("auth_token", token, {
@@ -40,6 +51,8 @@ export async function POST(request: Request) {
       sameSite: "lax",
       maxAge: 60 * 60 * 24 * 7, // 7 dias
     })
+
+    console.log("[LOGIN] Token salvo no cookie ✓")
 
     // Retornar os dados do usuário (sem o token por segurança)
     return NextResponse.json({ success: true, user })
