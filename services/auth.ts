@@ -54,7 +54,8 @@ export const authService = {
       }
 
       const data = await response.json()
-      return data.user
+      // data.user pode ser null se não houver sessão ativa
+      return data.user || null
     } catch (error) {
       return null
     }

@@ -7,8 +7,9 @@ export async function GET() {
     const cookieStore = await cookies()
     const authToken = cookieStore.get("auth_token")
 
+    // Se não houver token, retorna null ao invés de 401 para evitar logs de erro
     if (!authToken) {
-      return NextResponse.json({ error: "Não autenticado" }, { status: 401 })
+      return NextResponse.json({ user: null }, { status: 200 })
     }
 
     // Fazer requisição para a API real com o token
