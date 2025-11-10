@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { CaseCard } from "@/components/molecules/case-card"
+import { CaseCardSkeleton } from "@/components/atoms/skeletons"
 import { casesService } from "@/services/cases"
 import type { Case } from "@/types/cases.types"
 
@@ -30,7 +31,7 @@ export function CaseGrid() {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {Array.from({ length: 8 }).map((_, i) => (
-          <div key={i} className="h-64 bg-muted animate-pulse rounded-lg" />
+          <CaseCardSkeleton key={i} />
         ))}
       </div>
     )

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/atoms/card"
 import { Badge } from "@/components/atoms/badge"
+import { TransactionsSkeleton } from "@/components/atoms/skeletons"
 import { History, TrendingUp, TrendingDown, Package } from "lucide-react"
 
 export default function HistoricoPage() {
@@ -18,14 +19,7 @@ export default function HistoricoPage() {
   }, [user, isLoading, router])
 
   if (isLoading || !user || !userData) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Carregando...</p>
-        </div>
-      </div>
-    )
+    return <TransactionsSkeleton />
   }
 
   const getTransactionIcon = (type: string) => {
