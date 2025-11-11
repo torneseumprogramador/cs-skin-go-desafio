@@ -1,4 +1,4 @@
-.PHONY: help install dev build start lint clean test format
+.PHONY: help install dev build start lint clean test format test-e2e test-e2e-ui test-e2e-headed test-e2e-debug test-e2e-report
 
 # Cores para output
 GREEN  := \033[0;32m
@@ -69,6 +69,53 @@ port-3000: ## Libera a porta 3000 (mata processos usando ela)
 	@echo "$(YELLOW)Liberando porta 3000...$(RESET)"
 	@lsof -ti:3000 | xargs kill -9 2>/dev/null || echo "Porta 3000 já está livre"
 
+# Testes E2E
+test-e2e: ## Executa testes E2E (headless)
+	@echo "$(GREEN)Executando testes E2E...$(RESET)"
+	@echo "$(YELLOW)⚠️  Certifique-se que o backend está rodando na porta 3001!$(RESET)"
+	npm run test:e2e
+
+test-e2e-ui: ## Executa testes E2E com interface visual (RECOMENDADO)
+	@echo "$(GREEN)Abrindo interface visual dos testes E2E...$(RESET)"
+	@echo "$(YELLOW)⚠️  Certifique-se que o backend está rodando na porta 3001!$(RESET)"
+	npm run test:e2e:ui
+
+test-e2e-headed: ## Executa testes E2E com browser visível (modo visual)
+	@echo "$(GREEN)Executando testes E2E no modo visual...$(RESET)"
+	@echo "$(YELLOW)⚠️  Certifique-se que o backend está rodando na porta 3001!$(RESET)"
+	npm run test:e2e:headed
+
+test-e2e-debug: ## Executa testes E2E em modo debug (passo a passo)
+	@echo "$(GREEN)Iniciando testes E2E em modo debug...$(RESET)"
+	@echo "$(YELLOW)⚠️  Certifique-se que o backend está rodando na porta 3001!$(RESET)"
+	npm run test:e2e:debug
+
+test-e2e-report: ## Mostra o relatório dos últimos testes E2E
+	@echo "$(GREEN)Abrindo relatório dos testes E2E...$(RESET)"
+	npm run test:e2e:report
+
+test-e2e-install: ## Instala browsers do Playwright
+	@echo "$(GREEN)Instalando browsers do Playwright...$(RESET)"
+	npx playwright install chromium
+
+# Testes E2E sem iniciar servidor (usar quando o dev já estiver rodando)
+test-e2e-no-server: ## Executa testes E2E sem iniciar servidor (frontend deve estar rodando)
+	@echo "$(GREEN)Executando testes E2E (assumindo que frontend está rodando)...$(RESET)"
+	@echo "$(YELLOW)⚠️  Frontend deve estar em http://localhost:3000$(RESET)"
+	@echo "$(YELLOW)⚠️  Backend deve estar em http://localhost:3001$(RESET)"
+	npx playwright test --config=playwright.no-server.config.ts
+
+test-e2e-ui-no-server: ## Interface visual dos testes E2E sem iniciar servidor
+	@echo "$(GREEN)Abrindo interface visual (assumindo que frontend está rodando)...$(RESET)"
+	@echo "$(YELLOW)⚠️  Frontend deve estar em http://localhost:3000$(RESET)"
+	@echo "$(YELLOW)⚠️  Backend deve estar em http://localhost:3001$(RESET)"
+	npx playwright test --ui --config=playwright.no-server.config.ts
+
+test-e2e-verbose: ## Executa testes com output detalhado de erros
+	@echo "$(GREEN)Executando testes E2E com logs detalhados...$(RESET)"
+	@echo "$(YELLOW)⚠️  Certifique-se que o backend está rodando na porta 3001!$(RESET)"
+	DEBUG=pw:api npx playwright test --reporter=list --config=playwright.no-server.config.ts
+
 # Atalhos
 i: install ## Atalho para install
 d: dev ## Atalho para dev
@@ -76,4 +123,5 @@ b: build ## Atalho para build
 s: start ## Atalho para start
 l: lint ## Atalho para lint
 c: clean ## Atalho para clean
+t: test-e2e-ui ## Atalho para test-e2e-ui (modo visual recomendado)
 

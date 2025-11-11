@@ -38,7 +38,7 @@ export function CaseDetails({ id, name, price, image, description, skins }: Case
   const handleOpenCase = async () => {
     // Se não estiver autenticado, redirecionar para login
     if (!user) {
-      router.push(`/login?redirect=/caixa/${id}`)
+    router.push(`/login?redirect=/caixa/${id}`)
       return
     }
 
@@ -133,12 +133,12 @@ export function CaseDetails({ id, name, price, image, description, skins }: Case
               </>
             ) : !user ? (
               isHovered ? (
-                <>
-                  <Lock className="h-5 w-5 mr-2" />
-                  Fazer login para abrir
-                </>
-              ) : (
-                `Abrir por ${price === 0 ? "Grátis" : `R$ ${price.toFixed(2)}`}`
+              <>
+                <Lock className="h-5 w-5 mr-2" />
+                Fazer login para abrir
+              </>
+            ) : (
+              `Abrir por ${price === 0 ? "Grátis" : `R$ ${price.toFixed(2)}`}`
               )
             ) : (
               <>
