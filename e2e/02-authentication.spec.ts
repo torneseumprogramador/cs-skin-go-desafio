@@ -37,9 +37,9 @@ test.describe('🔐 Autenticação', () => {
     await passwordInputs.nth(0).fill(testUser.password);
     await passwordInputs.nth(1).fill(testUser.password);
     
-    // Aceitar termos - clicar nos labels que são visíveis
-    await page.locator('label:has-text("concordo com os")').click();
-    await page.locator('label:has-text("tenho 18 anos")').click();
+    // Aceitar termos - clicar nos checkboxes diretamente (force pois Radix UI os esconde)
+    await page.locator('#terms').check({ force: true });
+    await page.locator('#age').check({ force: true });
     
     // Aguardar um pouco antes de submeter
     await page.waitForTimeout(500);
@@ -55,9 +55,10 @@ test.describe('🔐 Autenticação', () => {
     // Aguardar dados do usuário carregarem
     await page.waitForTimeout(2000);
     
-    // Verificar que está logado (deve aparecer o nome do usuário)
+    // Verificar que está logado (deve aparecer o nome do usuário e saldo)
     await expect(page.locator(`text=${testUser.name}`).first()).toBeVisible({ timeout: 10000 });
-    await expect(page.locator('text=/R\\$\\s*\\d/')).toBeVisible({ timeout: 5000 });
+    // Verificar saldo no header (usando .first() para pegar apenas o do header)
+    await expect(page.locator('text=/R\\$\\s*\\d/').first()).toBeVisible({ timeout: 5000 });
   });
 
   test('deve fazer login com usuário existente', async ({ page }) => {
@@ -69,8 +70,10 @@ test.describe('🔐 Autenticação', () => {
     await page.getByLabel(/E-mail/i).fill(testUser.email);
     await page.getByLabel('Senha', { exact: true }).fill(testUser.password);
     await page.getByLabel(/Confirmar senha/i).fill(testUser.password);
-    await page.getByLabel(/concordo com os/i).check({ force: true });
-    await page.getByLabel(/tenho 18 anos/i).check({ force: true });
+    
+    // Aceitar termos - clicar nos checkboxes diretamente
+    await page.locator('#terms').check({ force: true });
+    await page.locator('#age').check({ force: true });
     await page.getByRole('button', { name: /Criar conta/i }).click();
     
     // Aguardar login automático
@@ -133,8 +136,10 @@ test.describe('🔐 Autenticação', () => {
     await page.getByLabel(/E-mail/i).fill(uniqueEmail);
     await page.getByLabel('Senha', { exact: true }).fill('senha123456');
     await page.getByLabel(/Confirmar senha/i).fill('senha123456');
-    await page.getByLabel(/concordo com os/i).check({ force: true });
-    await page.getByLabel(/tenho 18 anos/i).check({ force: true });
+    
+    // Aceitar termos - clicar nos checkboxes diretamente
+    await page.locator('#terms').check({ force: true });
+    await page.locator('#age').check({ force: true });
     await page.getByRole('button', { name: /Criar conta/i }).click();
     
     await page.waitForURL('/', { timeout: 10000 });

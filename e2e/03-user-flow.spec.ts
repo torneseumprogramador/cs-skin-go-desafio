@@ -25,9 +25,9 @@ test.describe('👤 Fluxo Completo do Usuário', () => {
     await passwordInputs.nth(0).fill(testUser.password);
     await passwordInputs.nth(1).fill(testUser.password);
     
-    // Aceitar termos - clicar nos labels visíveis
-    await page.locator('label:has-text("concordo com os")').click();
-    await page.locator('label:has-text("tenho 18 anos")').click();
+    // Aceitar termos - clicar nos checkboxes diretamente
+    await page.locator('#terms').check({ force: true });
+    await page.locator('#age').check({ force: true });
     
     await page.waitForTimeout(500);
     
@@ -59,8 +59,9 @@ test.describe('👤 Fluxo Completo do Usuário', () => {
     await page.waitForLoadState('networkidle');
     
     await expect(page.locator('h1:has-text("Meu Perfil")')).toBeVisible({ timeout: 10000 });
-    await expect(page.locator(`text=${testUser.name}`)).toBeVisible();
-    await expect(page.locator(`text=${testUser.email}`)).toBeVisible();
+    // Verificar nome e email no perfil (usar .first() pois pode aparecer em múltiplos lugares)
+    await expect(page.locator(`text=${testUser.name}`).first()).toBeVisible();
+    await expect(page.locator(`text=${testUser.email}`).first()).toBeVisible();
     
     console.log('✅ Perfil verificado!');
     
