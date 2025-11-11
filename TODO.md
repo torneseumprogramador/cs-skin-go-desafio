@@ -1,1 +1,0 @@
-- Gerar um prompt desta aplicação para que possamos criar a arquitetura e estrutura do projeto aplicação

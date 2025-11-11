@@ -2,9 +2,9 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/atoms/button"
 import { Input } from "@/components/atoms/input"
 import { Label } from "@/components/atoms/label"
@@ -14,7 +14,9 @@ import { useAuth } from "@/contexts/auth-context"
 
 export function LoginForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { login } = useAuth()
+  const redirectUrl = searchParams.get("redirect")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [rememberMe, setRememberMe] = useState(false)
@@ -29,7 +31,8 @@ export function LoginForm() {
     const result = await login(email, password)
 
     if (result.success) {
-      router.push("/")
+      // Redirecionar para a URL especificada ou para a home
+      router.push(redirectUrl || "/")
     } else {
       setError(result.error || "Erro ao fazer login")
       setIsLoading(false)

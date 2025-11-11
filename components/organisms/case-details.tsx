@@ -6,9 +6,11 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/atoms/button"
 import { Card, CardContent } from "@/components/atoms/card"
 import { Badge } from "@/components/atoms/badge"
-import { ArrowLeft, Lock } from "lucide-react"
+import { ArrowLeft, Lock, Package } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { CaseDetailsProps } from "@/types/components.types"
+import { useAuth } from "@/contexts/auth-context"
+import { useToast } from "@/hooks/use-toast"
 
 const rarityColors = {
   common: "bg-slate-500/20 text-slate-300 border-slate-500/50",
@@ -28,10 +30,63 @@ const rarityGradients = {
 
 export function CaseDetails({ id, name, price, image, description, skins }: CaseDetailsProps) {
   const router = useRouter()
+  const { user, userData, refreshUserData } = useAuth()
+  const { toast } = useToast()
   const [isHovered, setIsHovered] = useState(false)
+  const [isOpening, setIsOpening] = useState(false)
 
-  const handleOpenCase = () => {
-    router.push(`/login?redirect=/caixa/${id}`)
+  const handleOpenCase = async () => {
+    // Se não estiver autenticado, redirecionar para login
+    if (!user) {
+      router.push(`/login?redirect=/caixa/${id}`)
+      return
+    }
+
+    // Verificar se tem saldo suficiente
+    if (userData && userData.balance < price) {
+      toast({
+        title: "Saldo insuficiente",
+        description: "Você precisa adicionar mais saldo para abrir esta caixa.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setIsOpening(true)
+
+    try {
+      const response = await fetch(`/api/cases/${id}/open`, {
+        method: "POST",
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || "Erro ao abrir caixa")
+      }
+
+      // Atualizar dados do usuário
+      await refreshUserData()
+
+      // Mostrar o resultado
+      toast({
+        title: "Parabéns! 🎉",
+        description: `Você ganhou: ${data.won.name}!`,
+      })
+
+      // Opcional: Redirecionar para inventário após alguns segundos
+      setTimeout(() => {
+        router.push("/inventario")
+      }, 2000)
+    } catch (error) {
+      toast({
+        title: "Erro ao abrir caixa",
+        description: error instanceof Error ? error.message : "Tente novamente mais tarde.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsOpening(false)
+    }
   }
 
   return (
@@ -69,14 +124,27 @@ export function CaseDetails({ id, name, price, image, description, skins }: Case
             onClick={handleOpenCase}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
+            disabled={isOpening}
           >
-            {isHovered ? (
+            {isOpening ? (
               <>
-                <Lock className="h-5 w-5 mr-2" />
-                Fazer login para abrir
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                Abrindo...
               </>
+            ) : !user ? (
+              isHovered ? (
+                <>
+                  <Lock className="h-5 w-5 mr-2" />
+                  Fazer login para abrir
+                </>
+              ) : (
+                `Abrir por ${price === 0 ? "Grátis" : `R$ ${price.toFixed(2)}`}`
+              )
             ) : (
-              `Abrir por ${price === 0 ? "Grátis" : `R$ ${price.toFixed(2)}`}`
+              <>
+                <Package className="h-5 w-5 mr-2" />
+                {`Abrir por ${price === 0 ? "Grátis" : `R$ ${price.toFixed(2)}`}`}
+              </>
             )}
           </Button>
         </div>

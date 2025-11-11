@@ -5,6 +5,7 @@ import "./globals.css"
 import { AuthProvider } from "@/contexts/auth-context"
 import { Header } from "@/components/organisms/header"
 import { Footer } from "@/components/organisms/footer"
+import { Toaster } from "@/components/atoms/toaster"
 
 export const metadata: Metadata = {
   title: "SkinArena - Caixas de Sorte",
@@ -25,6 +26,7 @@ export default function RootLayout({
           <main className="flex-1">{children}</main>
           <Footer />
         </AuthProvider>
+        <Toaster />
         <Analytics />
       </body>
     </html>

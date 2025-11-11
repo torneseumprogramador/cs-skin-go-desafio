@@ -3,7 +3,7 @@ export interface Case {
   name: string
   price: number
   image: string
-  rarity: string
+  rarity: "common" | "uncommon" | "rare" | "epic" | "legendary"
   description: string
   isFree?: boolean
 }
