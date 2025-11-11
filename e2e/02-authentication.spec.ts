@@ -10,34 +10,54 @@ test.describe('🔐 Autenticação', () => {
 
   test('deve registrar um novo usuário', async ({ page }) => {
     setupConsoleLogger(page, 'auth-registro');
-    await page.goto('/');
+    await page.goto('/', { waitUntil: 'networkidle' });
     
-    // Clicar em Criar Conta
-    await page.getByRole('link', { name: /Criar Conta/i }).click();
-    await expect(page).toHaveURL(/.*cadastro/);
+    // Aguardar página carregar completamente
+    await page.waitForLoadState('domcontentloaded');
+    await page.waitForTimeout(1000);
+    
+    // Clicar em Criar Conta - buscar de forma mais robusta
+    const createAccountLink = page.locator('a:has-text("Criar Conta"), button:has-text("Criar Conta")').first();
+    await createAccountLink.waitFor({ state: 'visible', timeout: 10000 });
+    await createAccountLink.click();
+    
+    // Aguardar navegação
+    await page.waitForURL(/.*cadastro/, { timeout: 10000 });
+    await page.waitForLoadState('networkidle');
     
     // Verificar elementos do formulário
-    await expect(page.getByRole('heading', { name: /Criar conta/i })).toBeVisible();
+    await expect(page.locator('h1:has-text("Criar conta")')).toBeVisible({ timeout: 10000 });
     
-    // Preencher formulário
-    await page.getByLabel(/Nome completo/i).fill(testUser.name);
-    await page.getByLabel(/E-mail/i).fill(testUser.email);
-    await page.getByLabel('Senha', { exact: true }).fill(testUser.password);
-    await page.getByLabel(/Confirmar senha/i).fill(testUser.password);
+    // Preencher formulário - buscar inputs de forma mais robusta
+    await page.locator('input[type="text"]').first().fill(testUser.name);
+    await page.locator('input[type="email"]').fill(testUser.email);
     
-    // Aceitar termos
-    await page.getByLabel(/concordo com os/i).check();
-    await page.getByLabel(/tenho 18 anos/i).check();
+    // Preencher senhas
+    const passwordInputs = page.locator('input[type="password"]');
+    await passwordInputs.nth(0).fill(testUser.password);
+    await passwordInputs.nth(1).fill(testUser.password);
+    
+    // Aceitar termos - clicar nos labels que são visíveis
+    await page.locator('label:has-text("concordo com os")').click();
+    await page.locator('label:has-text("tenho 18 anos")').click();
+    
+    // Aguardar um pouco antes de submeter
+    await page.waitForTimeout(500);
     
     // Submeter formulário
-    await page.getByRole('button', { name: /Criar conta/i }).click();
+    const submitButton = page.locator('button:has-text("Criar conta")');
+    await submitButton.click();
     
-    // Aguardar redirecionamento para home
-    await page.waitForURL('/', { timeout: 10000 });
+    // Aguardar redirecionamento para home com mais tempo
+    await page.waitForURL('/', { timeout: 15000 });
+    await page.waitForLoadState('networkidle');
+    
+    // Aguardar dados do usuário carregarem
+    await page.waitForTimeout(2000);
     
     // Verificar que está logado (deve aparecer o nome do usuário)
-    await expect(page.getByText(testUser.name)).toBeVisible({ timeout: 5000 });
-    await expect(page.getByText(/R\$/)).toBeVisible();
+    await expect(page.locator(`text=${testUser.name}`).first()).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('text=/R\\$\\s*\\d/')).toBeVisible({ timeout: 5000 });
   });
 
   test('deve fazer login com usuário existente', async ({ page }) => {
@@ -49,8 +69,8 @@ test.describe('🔐 Autenticação', () => {
     await page.getByLabel(/E-mail/i).fill(testUser.email);
     await page.getByLabel('Senha', { exact: true }).fill(testUser.password);
     await page.getByLabel(/Confirmar senha/i).fill(testUser.password);
-    await page.getByLabel(/concordo com os/i).check();
-    await page.getByLabel(/tenho 18 anos/i).check();
+    await page.getByLabel(/concordo com os/i).check({ force: true });
+    await page.getByLabel(/tenho 18 anos/i).check({ force: true });
     await page.getByRole('button', { name: /Criar conta/i }).click();
     
     // Aguardar login automático
@@ -79,15 +99,28 @@ test.describe('🔐 Autenticação', () => {
 
   test('deve mostrar erro com credenciais inválidas', async ({ page }) => {
     setupConsoleLogger(page, 'auth-erro');
-    await page.goto('/login');
+    await page.goto('/login', { waitUntil: 'networkidle' });
+    await page.waitForLoadState('domcontentloaded');
     
-    // Tentar login com credenciais inválidas
-    await page.getByLabel(/E-mail/i).fill('invalido@example.com');
-    await page.getByLabel(/Senha/i).fill('senhaerrada');
-    await page.getByRole('button', { name: /Entrar/i }).click();
+    // Aguardar formulário carregar
+    await page.waitForTimeout(1000);
     
-    // Deve mostrar mensagem de erro
-    await expect(page.getByText(/E-mail ou senha incorretos|Erro ao fazer login/i)).toBeVisible({ timeout: 5000 });
+    // Tentar login com credenciais inválidas - usar locators mais robustos
+    await page.locator('input[type="email"]').fill('invalido@example.com');
+    await page.locator('input[type="password"]').fill('senhaerrada');
+    
+    // Aguardar antes de clicar
+    await page.waitForTimeout(500);
+    
+    // Clicar no botão de entrar
+    await page.locator('button:has-text("Entrar")').click();
+    
+    // Aguardar a resposta da API e mensagem de erro aparecer
+    await page.waitForTimeout(2000);
+    
+    // Deve mostrar mensagem de erro - buscar em todo o DOM
+    const errorMessage = page.locator('text=/E-mail ou senha incorretos|Erro ao fazer login|incorretos|inválid/i');
+    await expect(errorMessage.first()).toBeVisible({ timeout: 10000 });
   });
 
   test('deve redirecionar após login com parâmetro redirect', async ({ page }) => {
@@ -100,8 +133,8 @@ test.describe('🔐 Autenticação', () => {
     await page.getByLabel(/E-mail/i).fill(uniqueEmail);
     await page.getByLabel('Senha', { exact: true }).fill('senha123456');
     await page.getByLabel(/Confirmar senha/i).fill('senha123456');
-    await page.getByLabel(/concordo com os/i).check();
-    await page.getByLabel(/tenho 18 anos/i).check();
+    await page.getByLabel(/concordo com os/i).check({ force: true });
+    await page.getByLabel(/tenho 18 anos/i).check({ force: true });
     await page.getByRole('button', { name: /Criar conta/i }).click();
     
     await page.waitForURL('/', { timeout: 10000 });

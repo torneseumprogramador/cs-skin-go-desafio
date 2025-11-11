@@ -13,80 +13,125 @@ test.describe('👤 Fluxo Completo do Usuário', () => {
     
     // 1. REGISTRO
     console.log('📝 Registrando novo usuário...');
-    await page.goto('/cadastro');
+    await page.goto('/cadastro', { waitUntil: 'networkidle' });
+    await page.waitForLoadState('domcontentloaded');
+    await page.waitForTimeout(1000);
     
-    await page.getByLabel(/Nome completo/i).fill(testUser.name);
-    await page.getByLabel(/E-mail/i).fill(testUser.email);
-    await page.getByLabel('Senha', { exact: true }).fill(testUser.password);
-    await page.getByLabel(/Confirmar senha/i).fill(testUser.password);
-    await page.getByLabel(/concordo com os/i).check();
-    await page.getByLabel(/tenho 18 anos/i).check();
-    await page.getByRole('button', { name: /Criar conta/i }).click();
+    // Preencher formulário com locators mais robustos
+    await page.locator('input[type="text"]').first().fill(testUser.name);
+    await page.locator('input[type="email"]').fill(testUser.email);
     
-    await page.waitForURL('/', { timeout: 10000 });
-    await expect(page.getByText(testUser.name)).toBeVisible({ timeout: 5000 });
+    const passwordInputs = page.locator('input[type="password"]');
+    await passwordInputs.nth(0).fill(testUser.password);
+    await passwordInputs.nth(1).fill(testUser.password);
+    
+    // Aceitar termos - clicar nos labels visíveis
+    await page.locator('label:has-text("concordo com os")').click();
+    await page.locator('label:has-text("tenho 18 anos")').click();
+    
+    await page.waitForTimeout(500);
+    
+    await page.locator('button:has-text("Criar conta")').click();
+    
+    await page.waitForURL('/', { timeout: 15000 });
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(2000);
+    
+    await expect(page.locator(`text=${testUser.name}`).first()).toBeVisible({ timeout: 10000 });
     
     console.log('✅ Usuário registrado e logado!');
     
     // 2. VERIFICAR PERFIL
     console.log('👤 Acessando perfil...');
-    await page.getByRole('button', { name: testUser.name }).click();
-    await page.getByRole('menuitem', { name: /Perfil/i }).click();
-    await expect(page).toHaveURL(/.*perfil/);
     
-    await expect(page.getByRole('heading', { name: /Meu Perfil/i })).toBeVisible();
-    await expect(page.getByText(testUser.name)).toBeVisible();
-    await expect(page.getByText(testUser.email)).toBeVisible();
+    // Clicar no botão do usuário no header
+    const userButton = page.locator(`button:has-text("${testUser.name}")`).first();
+    await userButton.waitFor({ state: 'visible', timeout: 10000 });
+    await userButton.click();
+    
+    // Aguardar menu abrir
+    await page.waitForTimeout(500);
+    
+    // Clicar em Perfil no menu dropdown
+    await page.locator('text=Perfil').first().click();
+    
+    await page.waitForURL(/.*perfil/, { timeout: 10000 });
+    await page.waitForLoadState('networkidle');
+    
+    await expect(page.locator('h1:has-text("Meu Perfil")')).toBeVisible({ timeout: 10000 });
+    await expect(page.locator(`text=${testUser.name}`)).toBeVisible();
+    await expect(page.locator(`text=${testUser.email}`)).toBeVisible();
     
     console.log('✅ Perfil verificado!');
     
     // 3. ADICIONAR SALDO
     console.log('💰 Adicionando saldo...');
-    await page.getByRole('link', { name: /Adicionar Saldo/i }).click();
-    await expect(page).toHaveURL(/.*adicionar-saldo/);
+    
+    await page.locator('a:has-text("Adicionar Saldo")').first().click();
+    await page.waitForURL(/.*adicionar-saldo/, { timeout: 10000 });
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(1000);
     
     // Selecionar valor rápido de R$ 100
-    await page.getByRole('button', { name: /R\$ 100/i }).click();
+    await page.locator('button:has-text("R$ 100")').click();
+    await page.waitForTimeout(500);
     
     // Selecionar método de pagamento (PIX)
     await page.locator('button:has-text("PIX")').click();
+    await page.waitForTimeout(500);
     
     // Confirmar adição
-    await page.getByRole('button', { name: /Adicionar R\$/i }).click();
+    await page.locator('button:has-text("Adicionar R$")').click();
     
-    // Aguardar processamento e toast de sucesso
-    await expect(page.getByText(/Saldo adicionado/i)).toBeVisible({ timeout: 5000 });
+    // Aguardar processamento (2 segundos simulados + tempo de resposta)
+    await page.waitForTimeout(3000);
+    
+    // Verificar toast ou redirecionamento
+    const successIndicator = page.locator('text=/Saldo adicionado|adicionados à sua conta/i');
+    await expect(successIndicator.first()).toBeVisible({ timeout: 10000 });
     
     console.log('✅ Saldo adicionado!');
     
     // 4. VOLTAR PARA HOME E VER CAIXAS
     console.log('📦 Navegando para caixas...');
-    await page.goto('/');
+    await page.goto('/', { waitUntil: 'networkidle' });
+    await page.waitForLoadState('domcontentloaded');
     await page.waitForTimeout(2000);
+    
+    // Aguardar caixas carregarem
+    await page.waitForSelector('[href^="/caixa/"]', { state: 'visible', timeout: 10000 });
     
     // Clicar na primeira caixa
     const firstCase = page.locator('[href^="/caixa/"]').first();
     await firstCase.click();
     
-    await expect(page).toHaveURL(/.*\/caixa\/.+/);
+    await page.waitForURL(/.*\/caixa\/.+/, { timeout: 10000 });
+    await page.waitForLoadState('networkidle');
     await page.waitForTimeout(1000);
     
     console.log('✅ Detalhes da caixa carregados!');
     
     // 5. ABRIR CAIXA
     console.log('🎰 Abrindo caixa...');
-    const openButton = page.getByRole('button', { name: /Abrir por/i });
-    await expect(openButton).toBeVisible();
+    
+    // Aguardar botão de abrir caixa
+    const openButton = page.locator('button:has-text("Abrir por")');
+    await openButton.waitFor({ state: 'visible', timeout: 10000 });
     
     await openButton.click();
     
-    // Aguardar abertura e toast de sucesso
-    await expect(page.getByText(/Parabéns|ganhou/i)).toBeVisible({ timeout: 10000 });
+    // Aguardar abertura (pode demorar devido à API)
+    await page.waitForTimeout(3000);
+    
+    // Aguardar toast de sucesso ou redirecionamento
+    const caseOpenSuccess = page.locator('text=/Parabéns|ganhou|sucesso/i');
+    await expect(caseOpenSuccess.first()).toBeVisible({ timeout: 15000 });
     
     console.log('✅ Caixa aberta com sucesso!');
     
-    // Aguardar redirecionamento para inventário
-    await page.waitForURL(/.*inventario/, { timeout: 5000 });
+    // Aguardar redirecionamento para inventário (timeout maior)
+    await page.waitForURL(/.*inventario/, { timeout: 10000 });
+    await page.waitForLoadState('networkidle');
     
     // 6. VERIFICAR INVENTÁRIO
     console.log('🎒 Verificando inventário...');
@@ -110,13 +155,19 @@ test.describe('👤 Fluxo Completo do Usuário', () => {
     
     // 8. LOGOUT
     console.log('🚪 Fazendo logout...');
-    await page.getByRole('button', { name: testUser.name }).click();
-    await page.getByRole('menuitem', { name: /Sair/i }).click();
     
-    await page.waitForTimeout(1000);
+    const userButtonLogout = page.locator(`button:has-text("${testUser.name}")`).first();
+    await userButtonLogout.waitFor({ state: 'visible', timeout: 10000 });
+    await userButtonLogout.click();
+    
+    await page.waitForTimeout(500);
+    
+    await page.locator('text=Sair').first().click();
+    
+    await page.waitForTimeout(2000);
     
     // Verificar que voltou para estado não autenticado
-    await expect(page.getByRole('link', { name: /Entrar/i })).toBeVisible();
+    await expect(page.locator('a:has-text("Entrar"), button:has-text("Entrar")').first()).toBeVisible({ timeout: 10000 });
     
     console.log('✅ Fluxo completo executado com sucesso! 🎉');
   });

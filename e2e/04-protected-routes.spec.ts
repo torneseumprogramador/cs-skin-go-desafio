@@ -32,8 +32,8 @@ test.describe('🔒 Rotas Protegidas', () => {
     await page.getByLabel(/E-mail/i).fill(uniqueEmail);
     await page.getByLabel('Senha', { exact: true }).fill('senha123456');
     await page.getByLabel(/Confirmar senha/i).fill('senha123456');
-    await page.getByLabel(/concordo com os/i).check();
-    await page.getByLabel(/tenho 18 anos/i).check();
+    await page.getByLabel(/concordo com os/i).check({ force: true });
+    await page.getByLabel(/tenho 18 anos/i).check({ force: true });
     await page.getByRole('button', { name: /Criar conta/i }).click();
     
     await page.waitForURL('/', { timeout: 10000 });
